@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS repair_records (
     device_number VARCHAR(100) NOT NULL,
     device_model VARCHAR(100) NOT NULL,
     device_type VARCHAR(50) NOT NULL,
-    device_belong ENUM('一期', '二期', '其它') NOT NULL,
+    device_belong ENUM('一期', '二期', '一期和二期','其它') NOT NULL,
     section ENUM('电窑', '配料', 'B工序', '粉碎', '包装', '后勤', '其它') NOT NULL,
     quantity INT DEFAULT 1,
     fault_description TEXT NOT NULL,
@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS repair_records (
     INDEX idx_updated_at (updated_at),
     INDEX idx_status (status),
     INDEX idx_device_number (device_number),
-    INDEX idx_completion_time (completion_time)
+    INDEX idx_completion_time (completion_time),
+    INDEX idx_status_date (status, received_date)
 );
 
 -- 插入默认管理员用户

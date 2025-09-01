@@ -3,6 +3,44 @@ let statusChart, deviceTypeChart, belongChart, sectionChart;
 let currentPage = 1;
 let totalPages = 1;
 let totalRecords = 0;
+let chartCache = {}; // 添加图表缓存
+
+// 加载统计数据
+function loadStatistics() {
+    // 检查缓存
+    if (chartCache.statistics) {
+        updateStatistics(chartCache.statistics);
+        updateCharts(chartCache.statistics);
+        return;
+    }
+
+    fetch('api/statistics.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('网络响应错误: ' + response.status);
+            }
+            return response.text(); // 先获取文本内容
+        })
+        .then(text => {
+            try {
+                const data = JSON.parse(text); // 尝试解析JSON
+                if (data.success) {
+                    // 缓存数据
+                    chartCache.statistics = data.data;
+                    updateStatistics(data.data);
+                    updateCharts(data.data);
+                } else {
+                    console.error('加载统计信息失败:', data.message);
+                }
+            } catch (e) {
+                console.error('JSON解析错误:', e);
+                console.error('服务器返回的原始内容:', text);
+            }
+        })
+        .catch(error => {
+            console.error('请求失败:', error);
+        });
+}
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function () {
@@ -413,6 +451,62 @@ function resetFilters() {
     document.getElementById('dateFilter').value = '';
     currentPage = 1; // 重置到第一页
     loadRepairData(currentPage);
+}
+// 删除维修记录
+function deleteRepair(id) {
+    if (!confirm('确定要删除这条维修记录吗？此操作不可恢复！')) {
+        return;
+    }
+
+    fetch('api/repairs.php?id=' + id, {
+        method: 'DELETE'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('记录删除成功！');
+                loadRepairData(currentPage);
+                loadStatistics();
+            } else {
+                alert('删除失败：' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('删除失败:', error);
+            alert('删除失败，请稍后重试');
+        });
+}
+
+// 更新维修状态
+function updateStatus(id, newStatus) {
+    if (!confirm('确定要更新维修状态吗？')) {
+        return;
+    }
+
+    fetch('api/repairs.php', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: id,
+            status: newStatus
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('状态更新成功！');
+                loadRepairData(currentPage); // 保持在当前页
+                loadStatistics();
+            } else {
+                alert('更新失败：' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('更新失败:', error);
+            alert('更新失败，请稍后重试');
+        });
 }
 
 // 导出数据

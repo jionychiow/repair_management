@@ -108,6 +108,7 @@ try {
                                             <option value="调功器" <?php echo $repair['device_type'] == '调功器' ? 'selected' : ''; ?>>调功器</option>
                                             <option value="伺服器" <?php echo $repair['device_type'] == '伺服器' ? 'selected' : ''; ?>>伺服器</option>
                                             <option value="PLC设备" <?php echo $repair['device_type'] == 'PLC设备' ? 'selected' : ''; ?>>PLC设备</option>
+                                            <option value="电源模块" <?php echo $repair['device_type'] == '电源模块' ? 'selected' : ''; ?>>电源模块</option>
                                             <option value="其他电子设备" <?php echo $repair['device_type'] == '其他电子设备' ? 'selected' : ''; ?>>其他电子设备</option>
                                         </select>
                                     </div>
@@ -119,6 +120,7 @@ try {
                                             <option value="">请选择设备属于</option>
                                             <option value="一期" <?php echo $repair['device_belong'] == '一期' ? 'selected' : ''; ?>>一期</option>
                                             <option value="二期" <?php echo $repair['device_belong'] == '二期' ? 'selected' : ''; ?>>二期</option>
+                                            <option value="一期和二期" <?php echo $repair['device_belong'] == '一期和二期' ? 'selected' : ''; ?>>一期和二期</option>
                                             <option value="其它" <?php echo $repair['device_belong'] == '其它' ? 'selected' : ''; ?>>其它</option>
                                         </select>
                                     </div>
@@ -137,6 +139,9 @@ try {
                                             <option value="粉碎" <?php echo $repair['section'] == '粉碎' ? 'selected' : ''; ?>>粉碎</option>
                                             <option value="包装" <?php echo $repair['section'] == '包装' ? 'selected' : ''; ?>>包装</option>
                                             <option value="后勤" <?php echo $repair['section'] == '后勤' ? 'selected' : ''; ?>>后勤</option>
+                                            <option value="后勤" <?php echo $repair['section'] == '工程' ? 'selected' : ''; ?>>工程</option>
+                                            <option value="后勤" <?php echo $repair['section'] == '品管' ? 'selected' : ''; ?>>品管</option>
+                                            <option value="后勤" <?php echo $repair['section'] == '维修' ? 'selected' : ''; ?>>维修</option>
                                             <option value="其它" <?php echo $repair['section'] == '其它' ? 'selected' : ''; ?>>其它</option>
                                         </select>
                                     </div>
