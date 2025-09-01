@@ -8,10 +8,13 @@ USE repair_management;
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(100),  -- 添加中文名字字段
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
 
 -- 创建维修记录表
 CREATE TABLE IF NOT EXISTS repair_records (
@@ -39,4 +42,4 @@ CREATE TABLE IF NOT EXISTS repair_records (
 );
 
 -- 插入默认管理员用户
-INSERT INTO users (username, password, email) VALUES ('admin', '$2y$10$71bfxXxG076XCqAQ30/xj.EOjSvWItP0w3RFLtD4iDac.vc8XDGeK', 'admin@example.com');
+INSERT INTO users (username, name, password, email) VALUES ('admin', '管理员', '$2y$10$71bfxXxG076XCqAQ30/xj.EOjSvWItP0w3RFLtD4iDac.vc8XDGeK', 'admin@example.com');

@@ -12,6 +12,8 @@ $format = $_GET['format'] ?? 'csv';
 $search = $_GET['search'] ?? '';
 $status = $_GET['status'] ?? '';
 $date = $_GET['date'] ?? '';
+$startDate = $_GET['start_date'] ?? '';
+$endDate = $_GET['end_date'] ?? '';
 $exportAll = $_GET['export_all'] ?? 'false'; // 是否导出所有数据
 
 try {
@@ -35,6 +37,19 @@ try {
     if (!empty($date)) {
         $where[] = "received_date = ?";
         $params[] = $date;
+    }
+    
+    // 添加日期范围筛选
+    if (!empty($startDate) && !empty($endDate)) {
+        $where[] = "received_date BETWEEN ? AND ?";
+        $params[] = $startDate;
+        $params[] = $endDate;
+    } elseif (!empty($startDate)) {
+        $where[] = "received_date >= ?";
+        $params[] = $startDate;
+    } elseif (!empty($endDate)) {
+        $where[] = "received_date <= ?";
+        $params[] = $endDate;
     }
 
     $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -80,7 +95,7 @@ try {
             '接收日期',
             '维修状态',
             '优先级',
-            '负责人',
+            '维修员',
             '备注',
             '完成时间',
             '创建时间'
@@ -151,7 +166,7 @@ try {
         echo '<th>接收日期</th>';
         echo '<th>维修状态</th>';
         echo '<th>优先级</th>';
-        echo '<th>负责人</th>';
+        echo '<th>维修员</th>';
         echo '<th>备注</th>';
         echo '<th>完成时间</th>';
         echo '<th>创建时间</th>';

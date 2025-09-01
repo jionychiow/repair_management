@@ -1,9 +1,13 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
+require_once 'config/database.php';
+
+// 检查用户是否已登录
+if (!isset($_SESSION['user_name']) && !isset($_SESSION['username'])) {
     header('Location: login.php');
     exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -67,7 +71,7 @@ if (!isset($_SESSION['user_id'])) {
                                 </div>
                             </div>
 
-                            <div class="row">
+                                                        <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="device_type" class="form-label">设备类型 *</label>
@@ -77,6 +81,7 @@ if (!isset($_SESSION['user_id'])) {
                                             <option value="调功器">调功器</option>
                                             <option value="伺服器">伺服器</option>
                                             <option value="PLC设备">PLC设备</option>
+                                            <option value="电源模块">电源模块</option>
                                             <option value="其他电子设备">其他电子设备</option>
                                         </select>
                                     </div>
@@ -88,7 +93,8 @@ if (!isset($_SESSION['user_id'])) {
                                             <option value="">请选择设备属于</option>
                                             <option value="一期">一期</option>
                                             <option value="二期">二期</option>
-                                            <option value="其它">其它</option>
+                                            <option value="一期和二期">一期和二期</option>
+                                            <option value="其他">其他</option>
                                         </select>
                                     </div>
                                 </div>
@@ -106,6 +112,9 @@ if (!isset($_SESSION['user_id'])) {
                                             <option value="粉碎">粉碎</option>
                                             <option value="包装">包装</option>
                                             <option value="后勤">后勤</option>
+                                            <option value="工程">工程</option>
+                                            <option value="品管">品管</option>
+                                            <option value="维修">维修</option>
                                             <option value="其它">其它</option>
                                         </select>
                                     </div>
@@ -142,6 +151,12 @@ if (!isset($_SESSION['user_id'])) {
                                         <input type="date" class="form-control" id="received_date" name="received_date" required>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="assigned_to_display" class="form-label">维修员</label>
+                                <input type="text" class="form-control" id="assigned_to_display" value="<?php echo htmlspecialchars($_SESSION['user_name'] ?? $_SESSION['username']); ?>" readonly>
+                                <input type="hidden" id="assigned_to" name="assigned_to" value="<?php echo htmlspecialchars($_SESSION['user_name'] ?? $_SESSION['username']); ?>">
                             </div>
 
                             <div class="mb-3">

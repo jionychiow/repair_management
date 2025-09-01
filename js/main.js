@@ -265,7 +265,7 @@ function initCharts() {
     belongChart = new Chart(belongCtx, {
         type: 'pie',
         data: {
-            labels: ['一期', '二期', '其它'],
+            labels: ['一期', '二期', '一期和二期', '其它'],
             datasets: [{
                 data: [0, 0, 0],
                 backgroundColor: ['#007bff', '#28a745', '#ffc107'],
@@ -367,6 +367,7 @@ function updateCharts(stats) {
     belongChart.data.datasets[0].data = [
         belongData['一期'] || 0,
         belongData['二期'] || 0,
+        belongData['一期和二期'] || 0,
         belongData['其它'] || 0
     ];
     belongChart.update();
@@ -415,7 +416,7 @@ function resetFilters() {
 }
 
 // 导出数据
-function exportData() {
+function exportData(format) {
     const search = document.getElementById('searchDevice').value;
     const status = document.getElementById('statusFilter').value;
     const date = document.getElementById('dateFilter').value;
@@ -425,14 +426,12 @@ function exportData() {
     if (status) params.append('status', status);
     if (date) params.append('date', date);
 
-    // 显示导出选项
-    const format = confirm('选择导出格式：\n确定 = CSV格式\n取消 = Excel格式');
-    const exportFormat = format ? 'csv' : 'excel';
+    // 导出格式
+    params.append('format', format);
 
     // 询问是否导出所有数据
     const exportAll = confirm('选择导出范围：\n确定 = 导出所有匹配数据（可能较慢）\n取消 = 仅导出前1000条记录（推荐）');
 
-    params.append('format', exportFormat);
     params.append('export_all', exportAll ? 'true' : 'false');
 
     if (exportAll && totalRecords > 1000) {
@@ -442,6 +441,70 @@ function exportData() {
     }
 
     window.open(`export.php?${params.toString()}`, '_blank');
+}
+
+/// 显示日期范围导出模态框
+function showExportModal() {
+    console.log('showExportModal function called');
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    // 设置默认开始日期为一个月前
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const oneMonthAgoStr = oneMonthAgo.toISOString().split('T')[0];
+
+    document.getElementById('startDate').value = oneMonthAgoStr;
+    document.getElementById('endDate').value = todayStr;
+
+    // 显示模态框
+    const exportModalElement = document.getElementById('exportModal');
+    const exportModal = new bootstrap.Modal(exportModalElement);
+    exportModal.show();
+
+    // 在模态框完全显示后设置焦点
+    exportModalElement.addEventListener('shown.bs.modal', function () {
+        document.getElementById('startDate').focus();
+    }, { once: true }); // 使用 once: true 确保事件监听器只触发一次
+}
+
+// 按日期范围导出数据
+function exportByDateRange() {
+    console.log('exportByDateRange function called');
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const format = document.getElementById('exportFormat').value;
+    const exportAll = document.getElementById('exportAll').checked;
+
+    if (!startDate || !endDate) {
+        alert('请选择开始日期和结束日期');
+        return;
+    }
+
+    // 检查日期范围是否有效
+    if (new Date(startDate) > new Date(endDate)) {
+        alert('开始日期不能晚于结束日期');
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append('start_date', startDate);
+    params.append('end_date', endDate);
+    params.append('format', format);
+    params.append('export_all', exportAll ? 'true' : 'false');
+
+    // 关闭模态框
+    const exportModalElement = document.getElementById('exportModal');
+    const exportModal = bootstrap.Modal.getInstance(exportModalElement);
+    exportModal.hide();
+
+    // 执行导出
+    window.open(`export.php?${params.toString()}`, '_blank');
+
+    // 模态框关闭后将焦点返回到导出按钮
+    exportModalElement.addEventListener('hidden.bs.modal', function () {
+        document.getElementById('exportDropdown').focus();
+    }, { once: true }); // 使用 once: true 确保事件监听器只触发一次
 }
 
 // 更新维修状态

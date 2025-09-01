@@ -18,13 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fault_description = trim($_POST['fault_description'] ?? '');
     $received_date = $_POST['received_date'] ?? '';
     $priority = $_POST['priority'] ?? 'medium';
+    $assigned_to = trim($_POST['assigned_to'] ?? '');
     $notes = trim($_POST['notes'] ?? '');
 
     // 验证必填字段
     if (
         empty($device_model) || empty($device_type) ||
         empty($device_belong) || empty($section) || empty($fault_description) ||
-        empty($received_date)
+        empty($received_date) || empty($assigned_to)
     ) {
         $_SESSION['error'] = '请填写所有必填字段';
         header('Location: edit_repair.php?id=' . $id);
@@ -45,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 fault_description = ?,
                 received_date = ?, 
                 priority = ?, 
+                assigned_to = ?,
                 notes = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?"
@@ -59,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fault_description,
             $received_date,
             $priority,
+            $assigned_to,
             $notes,
             $id
         ]);

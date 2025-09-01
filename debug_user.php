@@ -37,12 +37,13 @@ try {
             if (count($users) > 0) {
                 echo "<h3>用户记录：</h3>";
                 echo "<table border='1' cellpadding='5' cellspacing='0'>";
-                echo "<tr><th>ID</th><th>用户名</th><th>密码哈希</th><th>邮箱</th><th>创建时间</th></tr>";
+                echo "<tr><th>ID</th><th>用户名</th><th>中文名字</th><th>密码哈希</th><th>邮箱</th><th>创建时间</th></tr>";
 
                 foreach ($users as $user) {
                     echo "<tr>";
                     echo "<td>" . htmlspecialchars($user['id']) . "</td>";
                     echo "<td>" . htmlspecialchars($user['username']) . "</td>";
+                    echo "<td>" . htmlspecialchars($user['name']) . "</td>";
                     echo "<td>" . htmlspecialchars($user['password']) . "</td>";
                     echo "<td>" . htmlspecialchars($user['email']) . "</td>";
                     echo "<td>" . htmlspecialchars($user['created_at']) . "</td>";
@@ -65,3 +66,4 @@ try {
 
 echo "<hr>";
 echo "<a href='login.php'>返回登录页面</a>";
+?>

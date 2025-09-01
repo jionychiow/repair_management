@@ -143,7 +143,7 @@ try {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <th>负责人:</th>
+                                        <th>维修员:</th>
                                         <td><?php echo htmlspecialchars($repair['assigned_to'] ?? '-'); ?></td>
                                     </tr>
                                     <tr>

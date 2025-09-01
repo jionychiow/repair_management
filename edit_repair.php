@@ -28,6 +28,11 @@ try {
         header('Location: index.php');
         exit();
     }
+    
+    // 获取所有用户信息用于维修员选择
+    $stmt = $pdo->prepare("SELECT id, username, name FROM users ORDER BY name");
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die('数据库错误: ' . $e->getMessage());
 }
@@ -168,6 +173,18 @@ try {
                                         <input type="date" class="form-control" id="received_date" name="received_date" value="<?php echo htmlspecialchars($repair['received_date']); ?>" required>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="assigned_to" class="form-label">维修员 *</label>
+                                <select class="form-select" id="assigned_to" name="assigned_to" required>
+                                    <option value="">请选择维修员</option>
+                                    <?php foreach ($users as $user): ?>
+                                        <option value="<?php echo htmlspecialchars($user['name'] ?? $user['username']); ?>" <?php echo $repair['assigned_to'] == ($user['name'] ?? $user['username']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($user['name'] ?? $user['username']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
 
                             <div class="mb-3">

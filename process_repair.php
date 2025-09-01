@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 获取表单数据
-   // $device_number = trim($_POST['device_number'] ?? '');
     $device_model = trim($_POST['device_model'] ?? '');
     $device_type = trim($_POST['device_type'] ?? '');
     $device_belong = trim($_POST['device_belong'] ?? '');
@@ -23,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 验证必填字段
     if (
-        /*empty($device_number) || */empty($device_model) || empty($device_type) ||
+        empty($device_model) || empty($device_type) ||
         empty($device_belong) || empty($section) || empty($fault_description) ||
         empty($received_date)
     ) {
@@ -34,50 +33,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $pdo = getDBConnection();
-
-        // 生成新的设备编号
+        
+        // 开始事务
+        $pdo->beginTransaction();
+        
+        // 生成设备编号前缀
         $stmt = $pdo->prepare("SELECT MAX(id) as max_id FROM repair_records");
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $new_id = ($result['max_id'] ?? 0) + 1;
-        $device_number = 'WX-' . str_pad($new_id, 3, '0', STR_PAD_LEFT);
+        
+        // 创建指定数量的记录
+        $success_count = 0;
+        for ($i = 0; $i < $quantity; $i++) {
+            // 为每个记录生成唯一的设备编号
+            $device_number = 'WX-' . str_pad($new_id + $i, 3, '0', STR_PAD_LEFT);
+            
+            // 检查设备编号是否已存在
+            $checkStmt = $pdo->prepare("SELECT id FROM repair_records WHERE device_number = ?");
+            $checkStmt->execute([$device_number]);
+            if ($checkStmt->fetch()) {
+                // 如果编号已存在，跳过这个编号
+                $i--;
+                continue;
+            }
+            
+            // 插入新记录，每条记录数量都为1
+            $insertStmt = $pdo->prepare("
+                INSERT INTO repair_records (
+                    device_number, device_model, device_type, device_belong, section, quantity, fault_description,
+                    received_date, priority, assigned_to, notes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
 
-        // 检查设备编号是否已存在
-        $stmt = $pdo->prepare("SELECT id FROM repair_records WHERE device_number = ?");
-        $stmt->execute([$device_number]);
-        if ($stmt->fetch()) {
-            $_SESSION['error'] = '设备编号已存在，请使用不同的编号';
-            header('Location: add_repair.php');
-            exit();
+            $insertStmt->execute([
+                $device_number,
+                $device_model,
+                $device_type,
+                $device_belong,
+                $section,
+                1, // 每条记录的数量都为1
+                $fault_description,
+                $received_date,
+                $priority,
+                $assigned_to,
+                $notes
+            ]);
+            
+            $success_count++;
         }
-
-        // 插入新记录
-        $stmt = $pdo->prepare("
-            INSERT INTO repair_records (
-                device_number, device_model, device_type, device_belong, section, quantity, fault_description,
-                received_date, priority, assigned_to, notes
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-
-        $stmt->execute([
-            $device_number,
-            $device_model,
-            $device_type,
-            $device_belong,
-            $section,
-            $quantity,
-            $fault_description,
-            $received_date,
-            $priority,
-            $assigned_to,
-            $notes
-        ]);
-
-        $_SESSION['success'] = '维修记录添加成功！';
+        
+        // 提交事务
+        $pdo->commit();
+        
+        $_SESSION['success'] = "成功创建 {$success_count} 条维修记录！";
         header('Location: index.php');
         exit();
     } catch (PDOException $e) {
-        $_SESSION['error'] = '保存失败，请稍后重试';
+        // 回滚事务
+        $pdo->rollback();
+        $_SESSION['error'] = '保存失败，请稍后重试: ' . $e->getMessage();
         header('Location: add_repair.php');
         exit();
     }

@@ -18,13 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         $pdo = getDBConnection();
-        $stmt = $pdo->prepare("SELECT id, username, password FROM users WHERE username = ?");
+        $stmt = $pdo->prepare("SELECT id, username, password, name FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['user_name'] = $user['name'];
             $_SESSION['success'] = '登录成功！';
             header('Location: index.php');
             exit();

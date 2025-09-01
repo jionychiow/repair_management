@@ -382,9 +382,19 @@ header_remove('X-Powered-By');
                         </button>
                     </div>
                     <div class="col-lg-2 col-md-6 mb-2">
-                        <button class="btn btn-success" onclick="exportData()">
-                            <i class="bi bi-download"></i> 导出数据
-                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-download"></i> 导出数据
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                                <li><a class="dropdown-item" href="#" onclick="exportData('csv')">导出CSV</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="exportData('excel')">导出Excel</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#" onclick="showExportModal()">按日期范围导出</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -410,7 +420,7 @@ header_remove('X-Powered-By');
                                 <th>接收日期</th>
                                 <th>维修状态</th>
                                 <th>优先级</th>
-                                <th>负责人</th>
+                                <th>维修员</th>
                                 <th>完成时间</th>
                                 <th>操作</th>
                             </tr>
@@ -474,7 +484,45 @@ header_remove('X-Powered-By');
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- 日期范围导出模态框 -->
+        <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exportModalLabel">按日期范围导出数据</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="startDate" class="form-label">开始日期</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">结束日期</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exportFormat" class="form-label">导出格式</label>
+                            <select class="form-select" id="exportFormat">
+                                <option value="csv">CSV格式</option>
+                                <option value="excel">Excel格式</option>
+                            </select>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="exportAll" checked>
+                            <label class="form-check-label" for="exportAll">
+                                导出所有匹配数据（可能较慢）
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="exportByDateRange()">导出</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
             // 页面加载时重新加载数据
             window.addEventListener('load', function() {
@@ -487,6 +535,7 @@ header_remove('X-Powered-By');
             loadRepairData(1);
             loadStatistics();
         </script>
+
 </body>
 
 </html>
