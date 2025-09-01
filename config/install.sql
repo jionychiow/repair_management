@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS repair_records (
     device_model VARCHAR(100) NOT NULL,
     device_type VARCHAR(50) NOT NULL,
     device_belong ENUM('一期', '二期', '一期和二期','其它') NOT NULL,
-    section ENUM('电窑', '配料', 'B工序', '粉碎', '包装', '后勤', '其它') NOT NULL,
+    section ENUM('电窑', '配料', 'B工序', '粉碎', '包装', '后勤', '工程', '品管', '维修', '其它') NOT NULL,
     quantity INT DEFAULT 1,
     fault_description TEXT NOT NULL,
     received_date DATE NOT NULL,
