@@ -267,10 +267,31 @@ function loadStatistics() {
 
 // 更新统计卡片
 function updateStatistics(stats) {
+    // 更新总设备数
     document.getElementById('totalDevices').textContent = stats.total;
-    document.getElementById('completedRepairs').textContent = stats.status_counts.completed;
-    document.getElementById('repairingCount').textContent = stats.status_counts.repairing;
-    document.getElementById('unrepairableCount').textContent = stats.status_counts.unrepairable;
+    
+    // 从status_distribution数组中提取各状态的数量
+    let statusCounts = {
+        '已维修': 0,
+        '检修中': 0,
+        '报废': 0
+    };
+    
+    // 遍历status_distribution数组，提取需要的状态数量
+    stats.status_distribution.forEach(item => {
+        if (item.status === '已维修') {
+            statusCounts['已维修'] = item.count;
+        } else if (item.status === '检修中') {
+            statusCounts['检修中'] = item.count;
+        } else if (item.status === '报废') {
+            statusCounts['报废'] = item.count;
+        }
+    });
+    
+    // 更新已完成、检修中、无法修复的数量
+    document.getElementById('completedRepairs').textContent = statusCounts['已维修'];
+    document.getElementById('repairingCount').textContent = statusCounts['检修中'];
+    document.getElementById('unrepairableCount').textContent = statusCounts['报废'];
 }
 
 // 初始化图表
