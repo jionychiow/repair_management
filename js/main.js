@@ -796,7 +796,7 @@ function updateCompletionTime(id) {
 
     // 根据是否清除时间来设置completion_time字段
     if (clearTime) {
-        requestData.completion_time = null;  // 明确发送null表示清除
+        requestData.completion_time = '__CLEAR__';  // 发送特殊标识表示清除
     } else if (completionTime) {
         requestData.completion_time = completionTime.replace('T', ' ') + ':00';
     } else {
@@ -804,8 +804,8 @@ function updateCompletionTime(id) {
         // 但这应该不会发生，因为模态框中默认设置了当前时间
     }
 
-    fetch('api/repairs.php', {
-        method: 'PUT', // 修复：确保使用PUT方法
+       fetch('api/repairs.php', {
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -820,6 +820,7 @@ function updateCompletionTime(id) {
             modal.hide();
             // 刷新数据
             loadRepairData(currentPage);
+            loadStatistics();
         } else {
             alert('设置失败：' + data.message);
         }

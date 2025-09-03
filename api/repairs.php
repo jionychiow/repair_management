@@ -155,11 +155,19 @@ switch ($method) {
                 $stmt = $pdo->prepare("UPDATE repair_records SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
                 $stmt->execute([$status, $id]);
                 echo json_encode(['success' => true, 'message' => '状态更新成功']);
-            } elseif ($completionTime !== null) {
-                // 只更新完成时间
-                $stmt = $pdo->prepare("UPDATE repair_records SET completion_time = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-                $stmt->execute([$completionTime, $id]);
-                echo json_encode(['success' => true, 'message' => '完成时间更新成功']);
+                        } elseif ($completionTime !== null) {
+                // 处理清除完成时间的情况
+                if ($completionTime === '__CLEAR__') {
+                    // 清除完成时间
+                    $stmt = $pdo->prepare("UPDATE repair_records SET completion_time = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+                    $stmt->execute([$id]);
+                    echo json_encode(['success' => true, 'message' => '完成时间清除成功']);
+                } else {
+                    // 只更新完成时间
+                    $stmt = $pdo->prepare("UPDATE repair_records SET completion_time = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+                    $stmt->execute([$completionTime, $id]);
+                    echo json_encode(['success' => true, 'message' => '完成时间更新成功']);
+                }
             } else {
                 echo json_encode(['success' => false, 'message' => '缺少更新参数']);
             }
