@@ -539,7 +539,6 @@ function exportData(format) {
 
 /// 显示日期范围导出模态框
 function showExportModal() {
-    console.log('showExportModal function called');
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
 
@@ -564,7 +563,6 @@ function showExportModal() {
 
 // 按日期范围导出数据
 function exportByDateRange() {
-    console.log('exportByDateRange function called');
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     const format = document.getElementById('exportFormat').value;
@@ -770,38 +768,45 @@ function updateCompletionTime(id) {
     const completionTime = document.getElementById('completionTime').value;
     const clearTime = document.getElementById('clearCompletionTime').checked;
 
-    let timeValue = null;
-    if (!clearTime && completionTime) {
-        timeValue = completionTime.replace('T', ' ') + ':00';
+    // 构建请求数据
+    const requestData = {
+        id: id
+    };
+
+    // 根据是否清除时间来设置completion_time字段
+    if (clearTime) {
+        requestData.completion_time = null;  // 明确发送null表示清除
+    } else if (completionTime) {
+        requestData.completion_time = completionTime.replace('T', ' ') + ':00';
+    } else {
+        // 如果既没有设置时间也没有勾选清除，则不发送completion_time字段
+        // 但这应该不会发生，因为模态框中默认设置了当前时间
     }
 
     fetch('api/repairs.php', {
-        method: 'PUT',
+        method: 'PUT', // 修复：确保使用PUT方法
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            id: id,
-            completion_time: timeValue
-        })
+        body: JSON.stringify(requestData)
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('完成时间设置成功！');
-                // 关闭模态框
-                const modal = bootstrap.Modal.getInstance(document.getElementById('completionTimeModal'));
-                modal.hide();
-                // 刷新数据
-                loadRepairData(currentPage);
-            } else {
-                alert('设置失败：' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('设置失败:', error);
-            alert('设置失败，请稍后重试');
-        });
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('完成时间设置成功！');
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('completionTimeModal'));
+            modal.hide();
+            // 刷新数据
+            loadRepairData(currentPage);
+        } else {
+            alert('设置失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('设置失败:', error);
+        alert('设置失败，请稍后重试');
+    });
 }
 
 // 查看维修详情
