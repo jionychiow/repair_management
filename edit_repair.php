@@ -139,9 +139,9 @@ try {
                                             <option value="粉碎" <?php echo $repair['section'] == '粉碎' ? 'selected' : ''; ?>>粉碎</option>
                                             <option value="包装" <?php echo $repair['section'] == '包装' ? 'selected' : ''; ?>>包装</option>
                                             <option value="后勤" <?php echo $repair['section'] == '后勤' ? 'selected' : ''; ?>>后勤</option>
-                                            <option value="后勤" <?php echo $repair['section'] == '工程' ? 'selected' : ''; ?>>工程</option>
-                                            <option value="后勤" <?php echo $repair['section'] == '品管' ? 'selected' : ''; ?>>品管</option>
-                                            <option value="后勤" <?php echo $repair['section'] == '维修' ? 'selected' : ''; ?>>维修</option>
+                                            <option value="工程" <?php echo $repair['section'] == '工程' ? 'selected' : ''; ?>>工程</option>
+                                            <option value="品管" <?php echo $repair['section'] == '品管' ? 'selected' : ''; ?>>品管</option>
+                                            <option value="维修" <?php echo $repair['section'] == '维修' ? 'selected' : ''; ?>>维修</option>
                                             <option value="其它" <?php echo $repair['section'] == '其它' ? 'selected' : ''; ?>>其它</option>
                                         </select>
                                     </div>
