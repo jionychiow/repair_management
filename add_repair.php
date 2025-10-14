@@ -94,7 +94,7 @@ if (!isset($_SESSION['user_name']) && !isset($_SESSION['username'])) {
                                             <option value="一期">一期</option>
                                             <option value="二期">二期</option>
                                             <option value="一期和二期">一期和二期</option>
-                                            <option value="其他">其他</option>
+                                            <option value="其它">其它</option>
                                         </select>
                                     </div>
                                 </div>
