@@ -18,10 +18,10 @@ $pdo = getDBConnection();
 
 switch ($method) {
     case 'GET':
-        // 检查是否是请求生成设备编号
+        // 检查是否是请求生成维修编号
         if (isset($_GET['action']) && $_GET['action'] === 'generate_device_number') {
             try {
-                // 生成新的设备编号
+                // 生成新的维修编号
                 $stmt = $pdo->prepare("SELECT MAX(id) as max_id FROM repair_records");
                 $stmt->execute();
                 $result = $stmt->fetch();
@@ -31,7 +31,7 @@ switch ($method) {
                 echo json_encode(['success' => true, 'device_number' => $device_number]);
                 exit;
             } catch (PDOException $e) {
-                echo json_encode(['success' => false, 'message' => '生成设备编号失败']);
+                echo json_encode(['success' => false, 'message' => '生成维修编号失败']);
                 exit;
             }
         }
@@ -70,8 +70,12 @@ switch ($method) {
         $countStmt->execute($params);
         $total = $countStmt->fetch()['total'];
 
-        // 获取分页数据，按时间倒序排列
-        $sql = "SELECT * FROM repair_records $whereClause ORDER BY created_at DESC, updated_at DESC LIMIT ? OFFSET ?";
+        // 获取分页数据，按维修编号数字部分倒序排列
+        if (DB_TYPE === 'sqlite') {
+            $sql = "SELECT * FROM repair_records $whereClause ORDER BY CAST(REPLACE(device_number, 'WX-', '') AS INTEGER) DESC LIMIT ? OFFSET ?";
+        } else {
+            $sql = "SELECT * FROM repair_records $whereClause ORDER BY CAST(REPLACE(device_number, 'WX-', '') AS UNSIGNED) DESC LIMIT ? OFFSET ?";
+        }
         $params[] = $limit;
         $params[] = $offset;
 

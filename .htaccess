@@ -46,6 +46,12 @@ AddDefaultCharset UTF-8
     Deny from all
 </Files>
 
+# 禁止访问SQLite数据库文件
+<Files "*.db">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
 # 设置缓存控制
 <IfModule mod_headers.c>
     # 静态资源缓存1个月

@@ -5,6 +5,178 @@ let totalPages = 1;
 let totalRecords = 0;
 let chartCache = {}; // 添加图表缓存
 
+// 主题颜色映射
+const THEME_COLORS = {
+    tech:     { primary: '#4f46e5', gradient: ['#4f46e5','#7c3aed','#818cf8','#a78bfa','#c4b5fd'] },
+    warm:     { primary: '#ea580c', gradient: ['#ea580c','#f97316','#fb923c','#fdba74','#fed7aa'] },
+    sunshine: { primary: '#d97706', gradient: ['#d97706','#f59e0b','#fbbf24','#fde68a','#fef3c7'] },
+    girly:    { primary: '#db2777', gradient: ['#db2777','#ec4899','#f472b6','#f9a8d4','#fbcfe8'] },
+    eyecare:  { primary: '#4d7c0f', gradient: ['#4d7c0f','#65a30d','#84cc16','#a3e635','#d9f99d'] }
+};
+
+function getCurrentTheme() {
+    return localStorage.getItem('app-theme') || 'tech';
+}
+
+function getThemeColors() {
+    return THEME_COLORS[getCurrentTheme()] || THEME_COLORS.tech;
+}
+
+// 图表通用颜色
+const CHART_PALETTE = [
+    'rgba(79, 70, 229, 0.85)',   // 靛蓝
+    'rgba(16, 185, 129, 0.85)',  // 翡翠绿
+    'rgba(245, 158, 11, 0.85)',  // 琥珀
+    'rgba(239, 68, 68, 0.85)',   // 红色
+    'rgba(6, 182, 212, 0.85)',   // 青色
+    'rgba(168, 85, 247, 0.85)',  // 紫色
+    'rgba(236, 72, 153, 0.85)',  // 粉色
+    'rgba(34, 197, 94, 0.85)',   // 绿色
+    'rgba(251, 146, 60, 0.85)',  // 橙色
+    'rgba(99, 102, 241, 0.85)'   // 蓝紫
+];
+
+const STATUS_COLORS = {
+    '待维修': { bg: 'rgba(245, 158, 11, 0.85)', border: '#f59e0b' },
+    '未维修': { bg: 'rgba(148, 163, 184, 0.85)', border: '#94a3b8' },
+    '检修中': { bg: 'rgba(6, 182, 212, 0.85)', border: '#06b6d4' },
+    '已维修': { bg: 'rgba(16, 185, 129, 0.85)', border: '#10b981' },
+    '报废':   { bg: 'rgba(239, 68, 68, 0.85)', border: '#ef4444' }
+};
+
+// ========== 自定义弹窗系统（替代 alert/confirm，避免浏览器拦截） ==========
+
+// 自定义 Alert 弹窗
+function CustomAlert(message, title = '提示') {
+    return new Promise(resolve => {
+        let modal = document.getElementById('customAlertDialog');
+        if (!modal) {
+            const html = `
+            <style>
+                #customAlertDialog .modal-content {
+                    border: none;
+                    border-radius: 16px;
+                    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+                    overflow: hidden;
+                }
+                #customAlertDialog .modal-header {
+                    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                    color: #fff;
+                    border: none;
+                    padding: 0.75rem 1.25rem;
+                }
+                #customAlertDialog .modal-title { font-size: 1rem; font-weight: 600; }
+                #customAlertDialog .modal-body { padding: 1.25rem; font-size: 0.95rem; color: #1e293b; }
+                #customAlertDialog .modal-footer { padding: 0.5rem 1.25rem; border-top: 1px solid #e2e8f0; }
+                #customAlertDialog .btn-primary {
+                    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    padding: 0.4rem 1.5rem;
+                }
+                #customConfirmDialog .modal-content {
+                    border: none;
+                    border-radius: 16px;
+                    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+                    overflow: hidden;
+                }
+                #customConfirmDialog .modal-header {
+                    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+                    color: #1e293b;
+                    border: none;
+                    padding: 0.75rem 1.25rem;
+                }
+                #customConfirmDialog .modal-title { font-size: 1rem; font-weight: 600; }
+                #customConfirmDialog .modal-body { padding: 1.25rem; font-size: 0.95rem; color: #1e293b; }
+                #customConfirmDialog .modal-footer { padding: 0.5rem 1.25rem; border-top: 1px solid #e2e8f0; }
+                #customConfirmDialog .btn-primary {
+                    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    padding: 0.4rem 1.5rem;
+                    color: #fff;
+                }
+                #customConfirmDialog .btn-secondary {
+                    border-radius: 8px;
+                    font-weight: 600;
+                    padding: 0.4rem 1.5rem;
+                }
+            </style>
+            <div class="modal fade" id="customAlertDialog" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-sm modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header text-white py-1">
+                            <h6 class="modal-title" id="customAlertTitle"><i class="bi bi-info-circle me-1"></i>${title}</h6>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="transform:scale(0.8)"></button>
+                        </div>
+                        <div class="modal-body" id="customAlertBody"></div>
+                        <div class="modal-footer py-1">
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal" id="customAlertOk"><i class="bi bi-check-lg"></i> 确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            modal = document.getElementById('customAlertDialog');
+        }
+        document.getElementById('customAlertTitle').innerHTML = '<i class="bi bi-info-circle me-1"></i>' + title;
+        document.getElementById('customAlertBody').textContent = message;
+        const bsModal = new bootstrap.Modal(modal);
+        const handler = () => { resolve(); };
+        document.getElementById('customAlertOk').addEventListener('click', handler, { once: true });
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.getElementById('customAlertOk').removeEventListener('click', handler);
+            resolve();
+        }, { once: true });
+        bsModal.show();
+    });
+}
+
+// 自定义 Confirm 弹窗
+function CustomConfirm(message, title = '确认') {
+    return new Promise(resolve => {
+        let modal = document.getElementById('customConfirmDialog');
+        if (!modal) {
+            const html = `
+            <div class="modal fade" id="customConfirmDialog" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-sm modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header py-1">
+                            <h6 class="modal-title" id="customConfirmTitle"><i class="bi bi-question-circle me-1"></i>${title}</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="transform:scale(0.8)"></button>
+                        </div>
+                        <div class="modal-body" id="customConfirmBody"></div>
+                        <div class="modal-footer py-1">
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" id="customConfirmCancel"><i class="bi bi-x-lg"></i> 取消</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="customConfirmOk"><i class="bi bi-check-lg"></i> 确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            modal = document.getElementById('customConfirmDialog');
+        }
+        document.getElementById('customConfirmTitle').innerHTML = '<i class="bi bi-question-circle me-1"></i>' + title;
+        document.getElementById('customConfirmBody').textContent = message;
+        const bsModal = new bootstrap.Modal(modal);
+        let resolved = false;
+        const onOk = () => { resolved = true; bsModal.hide(); resolve(true); };
+        const onCancel = () => { if (!resolved) { resolved = true; resolve(false); } };
+        document.getElementById('customConfirmOk').addEventListener('click', onOk, { once: true });
+        document.getElementById('customConfirmCancel').addEventListener('click', onCancel, { once: true });
+        modal.addEventListener('hidden.bs.modal', () => {
+            if (!resolved) { resolved = true; resolve(false); }
+            document.getElementById('customConfirmOk').removeEventListener('click', onOk);
+            document.getElementById('customConfirmCancel').removeEventListener('click', onCancel);
+        }, { once: true });
+        bsModal.show();
+    });
+}
+
+// ========== 自定义弹窗系统结束 ==========
+
 // 加载统计数据
 function loadStatistics() {
     // 检查缓存
@@ -296,24 +468,35 @@ function updateStatistics(stats) {
 
 // 初始化图表
 function initCharts() {
+    const tc = getThemeColors();
+
     // 维修状态分布饼图
     const statusCtx = document.getElementById('statusChart').getContext('2d');
     statusChart = new Chart(statusCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: ['待维修', '未维修', '检修中', '已维修', '报废'],
             datasets: [{
                 data: [0, 0, 0, 0, 0],
-                backgroundColor: ['#ffc107', '#6c757d', '#17a2b8', '#28a745', '#dc3545'],
-                borderWidth: 2,
-                borderColor: '#fff'
+                backgroundColor: [
+                    STATUS_COLORS['待维修'].bg,
+                    STATUS_COLORS['未维修'].bg,
+                    STATUS_COLORS['检修中'].bg,
+                    STATUS_COLORS['已维修'].bg,
+                    STATUS_COLORS['报废'].bg
+                ],
+                borderWidth: 3,
+                borderColor: '#fff',
+                hoverOffset: 8
             }]
         },
         options: {
             responsive: true,
+            cutout: '55%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
                 }
             }
         }
@@ -322,21 +505,24 @@ function initCharts() {
     // 设备属于分布饼图
     const belongCtx = document.getElementById('belongChart').getContext('2d');
     belongChart = new Chart(belongCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: ['一期', '二期', '一期和二期', '其它'],
             datasets: [{
-                data: [0, 0, 0],
-                backgroundColor: ['#007bff', '#28a745', '#ffc107'],
-                borderWidth: 2,
-                borderColor: '#fff'
+                data: [0, 0, 0, 0],
+                backgroundColor: [CHART_PALETTE[0], CHART_PALETTE[1], CHART_PALETTE[2], CHART_PALETTE[3]],
+                borderWidth: 3,
+                borderColor: '#fff',
+                hoverOffset: 8
             }]
         },
         options: {
             responsive: true,
+            cutout: '55%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
                 }
             }
         }
@@ -351,9 +537,11 @@ function initCharts() {
             datasets: [{
                 label: '设备数量',
                 data: [],
-                backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                backgroundColor: CHART_PALETTE[0],
+                borderColor: tc.primary,
+                borderWidth: 2,
+                borderRadius: 6,
+                borderSkipped: false
             }]
         },
         options: {
@@ -361,15 +549,15 @@ function initCharts() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
+                    ticks: { stepSize: 1 },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    grid: { display: false }
                 }
             },
             plugins: {
-                legend: {
-                    display: false
-                }
+                legend: { display: false }
             }
         }
     });
@@ -377,33 +565,39 @@ function initCharts() {
     // 设备类型分布饼图
     const deviceTypeCtx = document.getElementById('deviceTypeChart').getContext('2d');
     deviceTypeChart = new Chart(deviceTypeCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: [],
             datasets: [{
                 data: [],
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ],
-                borderWidth: 2,
-                borderColor: '#fff'
+                backgroundColor: CHART_PALETTE,
+                borderWidth: 3,
+                borderColor: '#fff',
+                hoverOffset: 8
             }]
         },
         options: {
             responsive: true,
+            cutout: '55%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
                 }
             }
         }
     });
 }
+
+// 监听主题变化，更新图表颜色
+window.addEventListener('themeChanged', function(e) {
+    if (statusChart) {
+        statusChart.update();
+        belongChart.update();
+        sectionChart.update();
+        deviceTypeChart.update();
+    }
+});
 
 // 更新图表数据
 function updateCharts(stats) {
@@ -474,8 +668,9 @@ function resetFilters() {
     loadRepairData(currentPage);
 }
 // 删除维修记录
-function deleteRepair(id) {
-    if (!confirm('确定要删除这条维修记录吗？此操作不可恢复！')) {
+async function deleteRepair(id) {
+    const confirmed = await CustomConfirm('确定要删除这条维修记录吗？此操作不可恢复！', '删除确认');
+    if (!confirmed) {
         return;
     }
 
@@ -483,24 +678,25 @@ function deleteRepair(id) {
         method: 'DELETE'
     })
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
-                alert('记录删除成功！');
+                await CustomAlert('记录删除成功！', '成功');
                 loadRepairData(currentPage);
                 loadStatistics();
             } else {
-                alert('删除失败：' + data.message);
+                await CustomAlert('删除失败：' + data.message, '错误');
             }
         })
-        .catch(error => {
+        .catch(async error => {
             console.error('删除失败:', error);
-            alert('删除失败，请稍后重试');
+            await CustomAlert('删除失败，请稍后重试', '错误');
         });
 }
 
 // 更新维修状态
-function updateStatus(id, newStatus) {
-    if (!confirm('确定要更新维修状态吗？')) {
+async function updateStatus(id, newStatus) {
+    const confirmed = await CustomConfirm('确定要更新维修状态吗？', '状态更新确认');
+    if (!confirmed) {
         return;
     }
 
@@ -515,23 +711,23 @@ function updateStatus(id, newStatus) {
         })
     })
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
-                alert('状态更新成功！');
+                await CustomAlert('状态更新成功！', '成功');
                 loadRepairData(currentPage); // 保持在当前页
                 loadStatistics();
             } else {
-                alert('更新失败：' + data.message);
+                await CustomAlert('更新失败：' + data.message, '错误');
             }
         })
-        .catch(error => {
+        .catch(async error => {
             console.error('更新失败:', error);
-            alert('更新失败，请稍后重试');
+            await CustomAlert('更新失败，请稍后重试', '错误');
         });
 }
 
 // 导出数据
-function exportData(format) {
+async function exportData(format) {
     const search = document.getElementById('searchDevice').value;
     const status = document.getElementById('statusFilter').value;
     const date = document.getElementById('dateFilter').value;
@@ -545,12 +741,13 @@ function exportData(format) {
     params.append('format', format);
 
     // 询问是否导出所有数据
-    const exportAll = confirm('选择导出范围：\n确定 = 导出所有匹配数据（可能较慢）\n取消 = 仅导出前1000条记录（推荐）');
+    const exportAll = await CustomConfirm('选择导出范围：\n确定 = 导出所有匹配数据（可能较慢）\n取消 = 仅导出前1000条记录（推荐）', '导出范围');
 
     params.append('export_all', exportAll ? 'true' : 'false');
 
     if (exportAll && totalRecords > 1000) {
-        if (!confirm(`当前有 ${totalRecords} 条记录，导出所有数据可能需要较长时间，确定继续吗？`)) {
+        const continueExport = await CustomConfirm(`当前有 ${totalRecords} 条记录，导出所有数据可能需要较长时间，确定继续吗？`, '大量数据导出');
+        if (!continueExport) {
             return;
         }
     }
@@ -583,20 +780,20 @@ function showExportModal() {
 }
 
 // 按日期范围导出数据
-function exportByDateRange() {
+async function exportByDateRange() {
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     const format = document.getElementById('exportFormat').value;
     const exportAll = document.getElementById('exportAll').checked;
 
     if (!startDate || !endDate) {
-        alert('请选择开始日期和结束日期');
+        await CustomAlert('请选择开始日期和结束日期', '提示');
         return;
     }
 
     // 检查日期范围是否有效
     if (new Date(startDate) > new Date(endDate)) {
-        alert('开始日期不能晚于结束日期');
+        await CustomAlert('开始日期不能晚于结束日期', '提示');
         return;
     }
 
@@ -621,8 +818,9 @@ function exportByDateRange() {
 }
 
 // 更新维修状态
-function updateStatus(id, newStatus) {
-    if (!confirm('确定要更新维修状态吗？')) {
+async function updateStatus(id, newStatus) {
+    const confirmed = await CustomConfirm('确定要更新维修状态吗？', '状态更新确认');
+    if (!confirmed) {
         return;
     }
 
@@ -637,18 +835,18 @@ function updateStatus(id, newStatus) {
         })
     })
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
-                alert('状态更新成功！');
+                await CustomAlert('状态更新成功！', '成功');
                 loadRepairData(currentPage); // 保持在当前页
                 loadStatistics();
             } else {
-                alert('更新失败：' + data.message);
+                await CustomAlert('更新失败：' + data.message, '错误');
             }
         })
-        .catch(error => {
+        .catch(async error => {
             console.error('更新失败:', error);
-            alert('更新失败，请稍后重试');
+            await CustomAlert('更新失败，请稍后重试', '错误');
         });
 }
 
@@ -663,39 +861,30 @@ function showStatusModal(id, currentStatus) {
 
     const modalHtml = `
         <div class="modal fade" id="statusModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">更改维修状态</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.2);overflow:hidden">
+                    <div class="modal-header" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;padding:0.6rem 1rem">
+                        <h6 class="modal-title" style="font-weight:600"><i class="bi bi-pencil me-1"></i>更改状态</h6>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" style="transform:scale(0.8)"></button>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="newStatus" class="form-label">选择新状态</label>
-                            <select class="form-select" id="newStatus">
-                                ${optionsHtml}
-                            </select>
-                        </div>
+                    <div class="modal-body" style="padding:0.8rem 1rem">
+                        <select class="form-select form-select-sm" id="newStatus">
+                            ${optionsHtml}
+                        </select>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-primary" onclick="updateStatus(${id})">确认更改</button>
+                    <div class="modal-footer" style="padding:0.4rem 1rem;border-top:1px solid #e2e8f0">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:8px">取消</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="updateStatus(${id})" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;font-weight:600">确认</button>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
-    // 移除已存在的模态框
     const existingModal = document.getElementById('statusModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
+    if (existingModal) existingModal.remove();
 
-    // 添加新模态框到页面
     document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-    // 显示模态框
     const modal = new bootstrap.Modal(document.getElementById('statusModal'));
     modal.show();
 }
@@ -704,54 +893,43 @@ function showStatusModal(id, currentStatus) {
 function showCompletionTimeModal(id) {
     const modalHtml = `
         <div class="modal fade" id="completionTimeModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">设置维修完成时间</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.2);overflow:hidden">
+                    <div class="modal-header" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;padding:0.6rem 1rem">
+                        <h6 class="modal-title" style="font-weight:600"><i class="bi bi-clock me-1"></i>完成时间</h6>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" style="transform:scale(0.8)"></button>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="completionTime" class="form-label">完成时间</label>
-                            <input type="datetime-local" class="form-control" id="completionTime">
-                        </div>
-                        <div class="form-check">
+                    <div class="modal-body" style="padding:0.8rem 1rem">
+                        <input type="datetime-local" class="form-control form-control-sm" id="completionTime">
+                        <div class="form-check mt-2">
                             <input class="form-check-input" type="checkbox" id="clearCompletionTime">
-                            <label class="form-check-label" for="clearCompletionTime">
-                                清除完成时间
-                            </label>
+                            <label class="form-check-label" for="clearCompletionTime" style="font-size:0.85rem">清除完成时间</label>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-primary" onclick="updateCompletionTime(${id})">确认设置</button>
+                    <div class="modal-footer" style="padding:0.4rem 1rem;border-top:1px solid #e2e8f0">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:8px">取消</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="updateCompletionTime(${id})" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;border-radius:8px;font-weight:600">确认</button>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
-    // 移除已存在的模态框
     const existingModal = document.getElementById('completionTimeModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
+    if (existingModal) existingModal.remove();
 
-    // 添加新模态框到页面
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-    // 设置当前时间作为默认值
     const now = new Date();
     const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     document.getElementById('completionTime').value = localDateTime;
 
-    // 显示模态框
     const modal = new bootstrap.Modal(document.getElementById('completionTimeModal'));
     modal.show();
 }
 
 // 更新维修状态
-function updateStatus(id) {
+async function updateStatus(id) {
     const newStatus = document.getElementById('newStatus').value;
 
     fetch('api/repairs.php', {
@@ -765,9 +943,9 @@ function updateStatus(id) {
         })
     })
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
-                alert('状态更新成功！');
+                await CustomAlert('状态更新成功！', '成功');
                 // 关闭模态框
                 const modal = bootstrap.Modal.getInstance(document.getElementById('statusModal'));
                 modal.hide();
@@ -775,17 +953,17 @@ function updateStatus(id) {
                 loadRepairData(currentPage);
                 loadStatistics();
             } else {
-                alert('更新失败：' + data.message);
+                await CustomAlert('更新失败：' + data.message, '错误');
             }
         })
-        .catch(error => {
+        .catch(async error => {
             console.error('更新失败:', error);
-            alert('更新失败，请稍后重试');
+            await CustomAlert('更新失败，请稍后重试', '错误');
         });
 }
 
 // 更新完成时间
-function updateCompletionTime(id) {
+async function updateCompletionTime(id) {
     const completionTime = document.getElementById('completionTime').value;
     const clearTime = document.getElementById('clearCompletionTime').checked;
 
@@ -812,9 +990,9 @@ function updateCompletionTime(id) {
         body: JSON.stringify(requestData)
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
-            alert('完成时间设置成功！');
+            await CustomAlert('完成时间设置成功！', '成功');
             // 关闭模态框
             const modal = bootstrap.Modal.getInstance(document.getElementById('completionTimeModal'));
             modal.hide();
@@ -822,12 +1000,12 @@ function updateCompletionTime(id) {
             loadRepairData(currentPage);
             loadStatistics();
         } else {
-            alert('设置失败：' + data.message);
+            await CustomAlert('设置失败：' + data.message, '错误');
         }
     })
-    .catch(error => {
+    .catch(async error => {
         console.error('设置失败:', error);
-        alert('设置失败，请稍后重试');
+        await CustomAlert('设置失败，请稍后重试', '错误');
     });
 }
 
@@ -844,8 +1022,9 @@ function editRepair(id) {
 }
 
 // 删除维修记录
-function deleteRepair(id) {
-    if (!confirm('确定要删除这条维修记录吗？此操作不可恢复！')) {
+async function deleteRepair(id) {
+    const confirmed = await CustomConfirm('确定要删除这条维修记录吗？此操作不可恢复！', '删除确认');
+    if (!confirmed) {
         return;
     }
 
@@ -853,17 +1032,17 @@ function deleteRepair(id) {
         method: 'DELETE'
     })
         .then(response => response.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
-                alert('记录删除成功！');
+                await CustomAlert('记录删除成功！', '成功');
                 loadRepairData(currentPage);
                 loadStatistics();
             } else {
-                alert('删除失败：' + data.message);
+                await CustomAlert('删除失败：' + data.message, '错误');
             }
         })
-        .catch(error => {
+        .catch(async error => {
             console.error('删除失败:', error);
-            alert('删除失败，请稍后重试');
+            await CustomAlert('删除失败，请稍后重试', '错误');
         });
 }

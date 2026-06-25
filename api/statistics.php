@@ -41,15 +41,27 @@ try {
     $priorityStats = $stmt->fetchAll();
 
     // 获取月度统计
-    $stmt = $pdo->query("
-        SELECT 
-            DATE_FORMAT(received_date, '%Y-%m') as month,
-            COUNT(*) as count
-        FROM repair_records 
-        GROUP BY DATE_FORMAT(received_date, '%Y-%m')
-        ORDER BY month DESC
-        LIMIT 12
-    ");
+    if (DB_TYPE === 'sqlite') {
+        $stmt = $pdo->query("
+            SELECT 
+                strftime('%Y-%m', received_date) as month,
+                COUNT(*) as count
+            FROM repair_records 
+            GROUP BY strftime('%Y-%m', received_date)
+            ORDER BY month DESC
+            LIMIT 12
+        ");
+    } else {
+        $stmt = $pdo->query("
+            SELECT 
+                DATE_FORMAT(received_date, '%Y-%m') as month,
+                COUNT(*) as count
+            FROM repair_records 
+            GROUP BY DATE_FORMAT(received_date, '%Y-%m')
+            ORDER BY month DESC
+            LIMIT 12
+        ");
+    }
     $monthlyStats = $stmt->fetchAll();
 
     // 获取完成率
@@ -63,12 +75,21 @@ try {
     $completionRate = $total > 0 ? round(($completionStats['completed'] / $total) * 100, 2) : 0;
 
     // 获取平均维修时间（已完成的项目）
-    $stmt = $pdo->query("
-        SELECT 
-            AVG(DATEDIFF(updated_at, received_date)) as avg_repair_days
-        FROM repair_records 
-        WHERE status = '已维修'
-    ");
+    if (DB_TYPE === 'sqlite') {
+        $stmt = $pdo->query("
+            SELECT 
+                AVG(julianday(updated_at) - julianday(received_date)) as avg_repair_days
+            FROM repair_records 
+            WHERE status = '已维修'
+        ");
+    } else {
+        $stmt = $pdo->query("
+            SELECT 
+                AVG(DATEDIFF(updated_at, received_date)) as avg_repair_days
+            FROM repair_records 
+            WHERE status = '已维修'
+        ");
+    }
     $avgRepairTime = $stmt->fetch()['avg_repair_days'];
 
         // 获取设备属于统计

@@ -85,7 +85,7 @@ try {
 
         // 写入表头
         fputcsv($output, [
-            '设备编号',
+            '维修编号',
             '设备型号',
             '设备类型',
             '设备属于',
@@ -156,7 +156,7 @@ try {
 
         // 表头
         echo '<tr>';
-        echo '<th>设备编号</th>';
+        echo '<th>维修编号</th>';
         echo '<th>设备型号</th>';
         echo '<th>设备类型</th>';
         echo '<th>设备属于</th>';

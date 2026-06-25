@@ -18,6 +18,7 @@ if (!isset($_SESSION['user_name']) && !isset($_SESSION['username'])) {
     <title>添加维修记录 - 维修管理系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/themes.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
@@ -58,9 +59,9 @@ if (!isset($_SESSION['user_name']) && !isset($_SESSION['username'])) {
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="device_number" class="form-label">设备编号 *</label>
+                                        <label for="device_number" class="form-label">维修编号 *</label>
                                         <input type="text" class="form-control" id="device_number" name="device_number" readonly>
-                                        <div class="form-text">系统将自动生成设备编号</div>
+                                        <div class="form-text">系统将自动生成维修编号</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -180,10 +181,11 @@ if (!isset($_SESSION['user_name']) && !isset($_SESSION['username'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/theme-switcher.js"></script>
     <script>
         // 设置默认日期为今天
         document.getElementById('received_date').valueAsDate = new Date();
-        // 通过AJAX获取设备编号
+        // 通过AJAX获取维修编号
         fetch('api/repairs.php?action=generate_device_number')
             .then(response => response.json())
             .then(data => {

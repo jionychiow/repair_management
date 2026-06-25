@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 开始事务
         $pdo->beginTransaction();
         
-        // 生成设备编号前缀
+        // 生成维修编号前缀
         $stmt = $pdo->prepare("SELECT MAX(id) as max_id FROM repair_records");
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -46,10 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 创建指定数量的记录
         $success_count = 0;
         for ($i = 0; $i < $quantity; $i++) {
-            // 为每个记录生成唯一的设备编号
+            // 为每个记录生成唯一的维修编号
             $device_number = 'WX-' . str_pad($new_id + $i, 3, '0', STR_PAD_LEFT);
             
-            // 检查设备编号是否已存在
+            // 检查维修编号是否已存在
             $checkStmt = $pdo->prepare("SELECT id FROM repair_records WHERE device_number = ?");
             $checkStmt->execute([$device_number]);
             if ($checkStmt->fetch()) {

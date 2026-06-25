@@ -19,241 +19,58 @@ header_remove('X-Powered-By');
     <!-- 修改index.php中的静态资源引用 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="css/themes.css?v=<?php echo time(); ?>" rel="stylesheet">
     <!-- 添加Chart.js库 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="js/main.js?v=<?php echo time(); ?>" crossorigin="anonymous"></script>
     <style>
-        /* 添加CSS兼容性样式 */
         body {
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
-
         th {
             text-align: -webkit-match-parent;
             text-align: match-parent;
         }
-
-        /* 响应式设计 */
         @media (max-width: 768px) {
-            html {
-                -webkit-text-size-adjust: 100%;
-                text-size-adjust: 100%;
-            }
-
-            .table-responsive {
-                font-size: 0.875rem;
-            }
-
-            .btn-group-sm .btn {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
-            }
-
-            .card-body {
-                padding: 1rem;
-            }
-
-            .row .col-md-3 {
-                margin-bottom: 1rem;
-            }
+            html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+            .table-responsive { font-size: 0.875rem; }
+            .btn-group-sm .btn { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+            .card-body { padding: 1rem; }
+            .row .col-md-3 { margin-bottom: 1rem; }
         }
-
-        /* 状态标签样式 - 自动颜色识别 */
-        .status-badge {
-            font-size: 0.8rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-        }
-
-        /* 根据状态自动设置颜色 */
-        .status-badge[data-status="待维修"] {
-            background-color: #ffc107;
-            color: #000;
-        }
-
-        .status-badge[data-status="未维修"] {
-            background-color: #6c757d;
-            color: #fff;
-        }
-
-        .status-badge[data-status="检修中"] {
-            background-color: #17a2b8;
-            color: #fff;
-        }
-
-        .status-badge[data-status="已维修"] {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .status-badge[data-status="报废"] {
-            background-color: #dc3545;
-            color: #fff;
-        }
-
-        /* 优先级样式 */
-        .priority-high {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .priority-medium {
-            color: #ffc107;
-            font-weight: bold;
-        }
-
-        .priority-low {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        /* 数量记录样式 */
-        .quantity-badge {
-            background-color: #6c757d;
-            color: white;
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-        }
-
-        /* 时间样式 */
-        .time-info {
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
-
-        .completion-time {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .no-completion-time {
-            color: #ffc107;
-            font-style: italic;
-        }
-
-        /* 筛选按钮组 */
-        .filter-buttons {
-            margin-bottom: 1rem;
-        }
-
-        .filter-buttons .btn {
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* 表格优化 */
-        .table th {
-            white-space: nowrap;
-            background-color: #f8f9fa;
-        }
-
-        .table td {
-            vertical-align: middle;
-        }
-
-        /* 在中等及以上屏幕上优化表格显示 */
+        .filter-buttons { margin-bottom: 1rem; }
+        .filter-buttons .btn { margin-right: 0.5rem; margin-bottom: 0.5rem; }
         @media (min-width: 768px) {
-            .table-responsive {
-                overflow-x: visible;
-            }
-
-            /* 为操作列设置固定宽度 */
-            #repairTable th:last-child,
-            #repairTable td:last-child {
-                width: 180px;
-                min-width: 180px;
-            }
-
-            /* 为其他列设置合理的最小宽度 */
-            #repairTable th:nth-child(1),
-            #repairTable td:nth-child(1) {
-                /* 设备编号 */
-                min-width: 100px;
-            }
-
-            #repairTable th:nth-child(2),
-            #repairTable td:nth-child(2) {
-                /* 设备型号 */
-                min-width: 120px;
-            }
-
-            #repairTable th:nth-child(4),
-            #repairTable td:nth-child(4) {
-                /* 故障描述 */
-                min-width: 150px;
-            }
-
-            #repairTable th:nth-child(5),
-            #repairTable td:nth-child(5) {
-                /* 设备属于 */
-                min-width: 100px;
-            }
-
-            #repairTable th:nth-child(6),
-            #repairTable td:nth-child(6) {
-                /* 工段 */
-                min-width: 100px;
-            }
+            .table-responsive { overflow-x: visible; }
+            #repairTable th:last-child, #repairTable td:last-child { width: 180px; min-width: 180px; }
+            #repairTable th:nth-child(1), #repairTable td:nth-child(1) { min-width: 100px; }
+            #repairTable th:nth-child(2), #repairTable td:nth-child(2) { min-width: 120px; }
+            #repairTable th:nth-child(4), #repairTable td:nth-child(4) { min-width: 150px; }
+            #repairTable th:nth-child(5), #repairTable td:nth-child(5) { min-width: 100px; }
+            #repairTable th:nth-child(6), #repairTable td:nth-child(6) { min-width: 100px; }
         }
-
-        /* 在大屏幕上进一步优化 */
         @media (min-width: 992px) {
-
-            #repairTable th:nth-child(4),
-            #repairTable td:nth-child(4) {
-                /* 故障描述 */
-                min-width: 200px;
-            }
-
-            #repairTable th:nth-child(5),
-            #repairTable td:nth-child(5) {
-                /* 设备属于 */
-                min-width: 120px;
-            }
-
-            #repairTable th:nth-child(6),
-            #repairTable td:nth-child(6) {
-                /* 工段 */
-                min-width: 120px;
-            }
+            #repairTable th:nth-child(4), #repairTable td:nth-child(4) { min-width: 200px; }
+            #repairTable th:nth-child(5), #repairTable td:nth-child(5) { min-width: 120px; }
+            #repairTable th:nth-child(6), #repairTable td:nth-child(6) { min-width: 120px; }
         }
-
-        /* 移动端优化 */
         @media (max-width: 576px) {
-            .container {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-            }
-
-            /* 为设备属于和工段列设置合适的最小宽度 */
-            #repairTable th:nth-child(5),
-            #repairTable td:nth-child(5) {
-                /* 设备属于 */
-                min-width: 80px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            #repairTable th:nth-child(6),
-            #repairTable td:nth-child(6) {
-                /* 工段 */
-                min-width: 80px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            /* 调整操作列宽度 */
-            #repairTable th:last-child,
-            #repairTable td:last-child {
-                width: 160px;
-                min-width: 160px;
-            }
+            .container { padding-left: 0.5rem; padding-right: 0.5rem; }
+            #repairTable th:nth-child(5), #repairTable td:nth-child(5) { min-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            #repairTable th:nth-child(6), #repairTable td:nth-child(6) { min-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            #repairTable th:last-child, #repairTable td:last-child { width: 160px; min-width: 160px; }
+        }
+        /* 统计卡片图标 */
+        .stat-card-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2.5rem;
+            opacity: 0.2;
+        }
+        .col-md-3 > .card, .col-sm-6 > .card {
+            position: relative;
         }
     </style>
 </head>
@@ -274,6 +91,7 @@ header_remove('X-Powered-By');
                     if (isset($_SESSION['user_id'])) {
                         echo '<a class="nav-link" href="add_repair.php"><i class="bi bi-plus-circle"></i> 添加维修记录</a>';
                         echo '<a class="nav-link" href="change_password.php"><i class="bi bi-key"></i> 修改密码</a>';
+                        echo '<a class="nav-link" href="migrate_db.php"><i class="bi bi-database"></i> 数据库迁移</a>';
                         echo '<a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> 退出登录</a>';
                     } else {
                         echo '<a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> 登录</a>';
@@ -290,6 +108,7 @@ header_remove('X-Powered-By');
             <div class="col-md-3 col-sm-6">
                 <div class="card text-white bg-primary">
                     <div class="card-body">
+                        <i class="bi bi-motherboard stat-card-icon"></i>
                         <h5 class="card-title">总设备数</h5>
                         <h3 id="totalDevices">0</h3>
                     </div>
@@ -298,6 +117,7 @@ header_remove('X-Powered-By');
             <div class="col-md-3 col-sm-6">
                 <div class="card text-white bg-success">
                     <div class="card-body">
+                        <i class="bi bi-check-circle stat-card-icon"></i>
                         <h5 class="card-title">已完成</h5>
                         <h3 id="completedRepairs">0</h3>
                     </div>
@@ -306,6 +126,7 @@ header_remove('X-Powered-By');
             <div class="col-md-3 col-sm-6">
                 <div class="card text-white bg-warning">
                     <div class="card-body">
+                        <i class="bi bi-wrench stat-card-icon"></i>
                         <h5 class="card-title">检修中</h5>
                         <h3 id="repairingCount">0</h3>
                     </div>
@@ -314,6 +135,7 @@ header_remove('X-Powered-By');
             <div class="col-md-3 col-sm-6">
                 <div class="card text-white bg-danger">
                     <div class="card-body">
+                        <i class="bi bi-x-octagon stat-card-icon"></i>
                         <h5 class="card-title">无法修复</h5>
                         <h3 id="unrepairableCount">0</h3>
                     </div>
@@ -358,7 +180,7 @@ header_remove('X-Powered-By');
             <div class="card-body">
                 <div class="row">
                     <div class="col-lg-3 col-md-6 mb-2">
-                        <input type="text" class="form-control" id="searchDevice" placeholder="搜索设备编号或型号">
+                        <input type="text" class="form-control" id="searchDevice" placeholder="搜索维修编号或型号">
                     </div>
                     <div class="col-lg-2 col-md-6 mb-2">
                         <select class="form-select" id="statusFilter" aria-label="按状态筛选">
@@ -404,14 +226,14 @@ header_remove('X-Powered-By');
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">维修记录</h5>
-                <small class="text-muted">按时间倒序排列，支持分页浏览</small>
+                <small class="text-muted">按维修编号数字排序，支持分页浏览</small>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-striped" id="repairTable">
                         <thead>
                             <tr>
-                                <th>设备编号</th>
+                                <th>维修编号</th>
                                 <th>设备型号</th>
                                 <th>数量</th>
                                 <th>故障描述</th>
@@ -523,15 +345,15 @@ header_remove('X-Powered-By');
             </div>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="js/theme-switcher.js"></script>
+        <script src="js/main.js?v=<?php echo time(); ?>" crossorigin="anonymous"></script>
         <script>
             // 页面加载时重新加载数据
             window.addEventListener('load', function() {
-                // 重新加载数据
                 loadRepairData(1);
                 loadStatistics();
             });
-
-            // 重新加载数据
             loadRepairData(1);
             loadStatistics();
         </script>

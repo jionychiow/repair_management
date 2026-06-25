@@ -6,18 +6,25 @@
     <title>登录 - 维修管理系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/themes.css" rel="stylesheet">
+    <style>
+        .login-card { border-radius: 20px !important; overflow: hidden; }
+        .login-card .card-header { padding: 1.5rem; }
+        .login-card .card-header h4 { font-weight: 700; }
+        .login-card .card-body { padding: 2rem; }
+        .login-icon { font-size: 2.5rem; opacity: 0.15; position: absolute; right: 20px; top: 20px; }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container">
         <div class="row justify-content-center mt-5">
             <div class="col-md-6 col-lg-4">
-                <div class="card shadow">
+                <div class="card shadow login-card">
                     <div class="card-header text-center bg-primary text-white">
                         <h4 class="mb-0">
                             <i class="bi bi-tools"></i> 维修管理系统
-                            <small class="text-muted">开发者：Jionychiow-韦</small>
                         </h4>
-                        <p class="mb-0">用户登录</p>
+                        <p class="mb-0 mt-1" style="opacity:0.8">用户登录</p>
                     </div>
                     <div class="card-body">
                         <?php
@@ -68,5 +75,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/theme-switcher.js"></script>
 </body>
 </html>
