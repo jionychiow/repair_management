@@ -1046,3 +1046,119 @@ async function deleteRepair(id) {
             await CustomAlert('删除失败，请稍后重试', '错误');
         });
 }
+
+// ========== 重置数据功能（双重认证 + 自动备份） ==========
+function showResetDataModal() {
+    const modalHtml = `
+    <div class="modal fade" id="resetDataModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.2);overflow:hidden">
+                <div class="modal-header" style="background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;padding:0.7rem 1.25rem">
+                    <h6 class="modal-title" style="font-weight:700"><i class="bi bi-exclamation-triangle me-1"></i>重置数据</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" style="transform:scale(0.8)"></button>
+                </div>
+                <div class="modal-body" style="padding:1.25rem">
+                    <div class="alert alert-danger mb-3" style="border-radius:10px;font-size:0.88rem;padding:0.6rem 0.8rem">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        <strong>危险操作！</strong>此操作将清空所有维修记录，用户账号将保留。系统会自动备份数据。
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight:600;font-size:0.85rem">
+                            <i class="bi bi-lock me-1"></i>第一步：输入登录密码
+                        </label>
+                        <input type="password" class="form-control form-control-sm" id="resetPassword" placeholder="请输入当前登录密码">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label" style="font-weight:600;font-size:0.85rem">
+                            <i class="bi bi-shield-check me-1"></i>第二步：输入确认文本
+                        </label>
+                        <input type="text" class="form-control form-control-sm" id="resetConfirmText" placeholder='请输入"确认重置数据"'>
+                        <div class="form-text" style="font-size:0.78rem;margin-top:4px">
+                            请输入 <code style="color:#dc2626;font-weight:700">确认重置数据</code> 以确认操作
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding:0.5rem 1.25rem;border-top:1px solid #e2e8f0">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:8px;font-weight:600">
+                        <i class="bi bi-x-lg me-1"></i>取消
+                    </button>
+                    <button type="button" class="btn btn-sm" id="executeResetBtn" onclick="executeResetData()" disabled
+                        style="background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:8px;font-weight:600;color:#fff;opacity:0.5">
+                        <i class="bi bi-trash me-1"></i>确认重置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    const existing = document.getElementById('resetDataModal');
+    if (existing) existing.remove();
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // 监听确认文本输入，匹配后启用按钮
+    const confirmInput = document.getElementById('resetConfirmText');
+    const resetBtn = document.getElementById('executeResetBtn');
+    confirmInput.addEventListener('input', function() {
+        const matched = this.value === '确认重置数据' && document.getElementById('resetPassword').value.length > 0;
+        resetBtn.disabled = !matched;
+        resetBtn.style.opacity = matched ? '1' : '0.5';
+    });
+    document.getElementById('resetPassword').addEventListener('input', function() {
+        const matched = confirmInput.value === '确认重置数据' && this.value.length > 0;
+        resetBtn.disabled = !matched;
+        resetBtn.style.opacity = matched ? '1' : '0.5';
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('resetDataModal'));
+    modal.show();
+}
+
+async function executeResetData() {
+    const password = document.getElementById('resetPassword').value;
+    const confirmText = document.getElementById('resetConfirmText').value;
+
+    if (!password) {
+        await CustomAlert('请输入登录密码', '提示');
+        return;
+    }
+    if (confirmText !== '确认重置数据') {
+        await CustomAlert('确认文本不匹配', '提示');
+        return;
+    }
+
+    const resetBtn = document.getElementById('executeResetBtn');
+    resetBtn.disabled = true;
+    resetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>处理中...';
+
+    try {
+        const response = await fetch('api/reset_data.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, confirm_text: confirmText })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const resetModal = bootstrap.Modal.getInstance(document.getElementById('resetDataModal'));
+            resetModal.hide();
+            await CustomAlert(
+                `数据重置成功！\n\n备份文件：${data.backup_file}\n备份大小：${data.backup_size}\n\n维修记录已清空，用户账号已保留。`,
+                '重置完成'
+            );
+            loadRepairData(1);
+            loadStatistics();
+        } else {
+            await CustomAlert(data.message, '重置失败');
+            resetBtn.disabled = false;
+            resetBtn.innerHTML = '<i class="bi bi-trash me-1"></i>确认重置';
+            resetBtn.style.opacity = '1';
+        }
+    } catch (error) {
+        console.error('重置失败:', error);
+        await CustomAlert('重置失败，请稍后重试', '错误');
+        resetBtn.disabled = false;
+        resetBtn.innerHTML = '<i class="bi bi-trash me-1"></i>确认重置';
+        resetBtn.style.opacity = '1';
+    }
+}

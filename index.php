@@ -92,6 +92,7 @@ header_remove('X-Powered-By');
                         echo '<a class="nav-link" href="add_repair.php"><i class="bi bi-plus-circle"></i> 添加维修记录</a>';
                         echo '<a class="nav-link" href="change_password.php"><i class="bi bi-key"></i> 修改密码</a>';
                         echo '<a class="nav-link" href="migrate_db.php"><i class="bi bi-database"></i> 数据库迁移</a>';
+                        echo '<a class="nav-link" href="#" onclick="showResetDataModal(); return false;"><i class="bi bi-arrow-counterclockwise"></i> 重置数据</a>';
                         echo '<a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> 退出登录</a>';
                     } else {
                         echo '<a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> 登录</a>';
