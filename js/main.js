@@ -944,12 +944,16 @@ async function updateStatus(id) {
     })
         .then(response => response.json())
         .then(async data => {
+            // 先关闭模态框，再显示提示
+            const modalEl = document.getElementById('statusModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+
             if (data.success) {
                 await CustomAlert('状态更新成功！', '成功');
-                // 关闭模态框
-                const modal = bootstrap.Modal.getInstance(document.getElementById('statusModal'));
-                modal.hide();
-                // 刷新数据
                 loadRepairData(currentPage);
                 loadStatistics();
             } else {
@@ -991,12 +995,16 @@ async function updateCompletionTime(id) {
     })
     .then(response => response.json())
     .then(async data => {
+        // 先关闭模态框，再显示提示
+        const modalEl = document.getElementById('completionTimeModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+
         if (data.success) {
             await CustomAlert('完成时间设置成功！', '成功');
-            // 关闭模态框
-            const modal = bootstrap.Modal.getInstance(document.getElementById('completionTimeModal'));
-            modal.hide();
-            // 刷新数据
             loadRepairData(currentPage);
             loadStatistics();
         } else {
